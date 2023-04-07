@@ -213,22 +213,14 @@ def check_file(path, flake8ignore, maxlength, maxdoclenght, maxcomplexity,
     if statistics:
         args += ['--statistics']
     app = application.Application()
-    prelim_opts, remaining_args = app.parse_preliminary_options(args)
-    config_finder = config.ConfigFileFinder(
-        app.program,
-        prelim_opts.append_config,
-        config_file=prelim_opts.config,
-        ignore_config_files=prelim_opts.isolated,
-    )
-    app.find_plugins(config_finder)
-    app.register_plugin_options()
-    app.parse_configuration_and_cli(config_finder, remaining_args)
+    app.plugins, app.options = application.parse_args(args)
+    app.options.filenames = [str(path)]
     if flake8ignore:
         app.options.ignore = flake8ignore
     app.make_formatter()  # fix this
     app.make_guide()
-    app.make_file_checker_manager()
-    app.run_checks([str(path)])
+    app.make_file_checker_manager(args)
+    app.run_checks()
     app.formatter.start()
     app.report_errors()
     app.formatter.stop()
